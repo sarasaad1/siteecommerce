@@ -14,7 +14,7 @@ function App() {
     <Router>
       <Switch>
         <Route exact path="/"  component={Home}/>
-        <Route exact path="/produits/:category" component={ListeProduits}/>
+        <Route exact path="/produits/:categorie" component={ListeProduits}/>
         <Route exact path="/produit/:id" component={Produit}/>
         <Route path="/panier" component={Panier}/>
         <Route path="/login">{user ? <Redirect to="/" /> : <Login />}</Route>

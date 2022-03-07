@@ -1,8 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Search , ShoppingCartOutlined } from "@material-ui/icons";
-import { Badge } from '@material-ui/core';
+import { Badge } from '@material-ui/core'
 import { FavoriteBorderOutlined } from '@material-ui/icons'
+import { useSelector } from "react-redux"
 import mobile from '../responsive';
 
 
@@ -73,7 +74,11 @@ const MenuItem = styled.div`
 
 
 function Navbar() {
-  return ( 
+  const wishlistQ= useSelector (state => state.wishlist.quantite);
+  console.log(wishlistQ);
+  const panierQ= useSelector (state => state.panier.quantite);
+  console.log(panierQ);    
+  return (   
     <Container>
       <Wrapper>  
         <Left>          
@@ -89,10 +94,10 @@ function Navbar() {
           <MenuItem><b>S'inscrire</b></MenuItem>
           <MenuItem><b>Se connecter</b></MenuItem>
           <MenuItem>
-            <Badge badgeContent={4} color="primary" >
+            <Badge badgeContent={panierQ} color="primary" >
             <ShoppingCartOutlined />           
             </Badge>
-            <Badge badgeContent={1} color="primary">
+            <Badge badgeContent={wishlistQ} color="primary">
             <FavoriteBorderOutlined style={{marginLeft: "20px"}}/>
             </Badge>
           </MenuItem>

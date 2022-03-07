@@ -5,8 +5,15 @@ import Footer from '../composants/Footer'
 import Navbar from '../composants/Navbar'
 import Nouveautes from '../composants/Nouveautes'
 import { Add, Remove } from "@material-ui/icons"
+import { useEffect, useState } from "react"
+import { useLocation } from "react-router-dom"
+import { ajouterproduitPanier } from "../redux/panierRedux"
+import { ajouterproduitFavori } from "../redux/FavoriteRedux"
+import axios from 'axios'
+import { useDispatch } from "react-redux"
 import mobile from '../responsive';
-
+import { FavoriteBorderOutlined } from '@material-ui/icons'
+import { Favorite} from '@material-ui/icons'
 const Container = styled.div`
 `
 const Wrapper = styled.div`
@@ -22,7 +29,7 @@ const ImgContainer = styled.div`
 const Image = styled.img`
   width: 100%;
   height: 90vh;
-  object-fit: cover;
+  object-fit: contain;
   ${mobile({ height: "40vh" })}
 `
 
@@ -33,19 +40,26 @@ const InfoContainer = styled.div`
 `
 
 const Title = styled.h1`
-  font-weight: 200;
+  font-weight: 500;
+  font-size: 45px;
+  ${mobile({ fontweight: "200", fontSize:"30px" })}
 `
 
 const Desc = styled.p`
   margin: 20px 0px;
+  margin-top: -20px ;
+  color: #333333;
+  font-weight: 450;
 `
 
 const Price = styled.span`
-  font-weight: 100;
-  font-size: 40px;
+  font-weight: 500;
+  font-size: 35px;
+  color: #333333;
+  text-align: end;
 `
 const FilterContainer = styled.div`
-  width: 55%;
+  width: 100%;
   margin: 30px 0px;
   display: flex;
   justify-content: space-between;
@@ -71,17 +85,19 @@ const FilterColor = styled.div`
   margin: 0px 5px;
   cursor: pointer;
   margin-left: 10px;
+  border: 1px solid gray;
 `;
 
 const FilterSize = styled.select`
   margin-left: 10px;
   padding: 5px;
+  width: 120px;
 `;
 
 const FilterSizeOption = styled.option``;
 
 const AddContainer = styled.div`
-  width: 50%;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -108,57 +124,90 @@ const Amount = styled.span`
 const Button = styled.button`
   padding: 15px;
   border: 2px solid gray;
-  background-color: white;
+  background-color: black;
+  margin-left: 10px;
   cursor: pointer;  
-  font-weight: 700;
+  color: white;
+  width: 400px;
+  font-weight: 800;
   &:hover{
-      background-color: #DCDCDC;
+      background-color: #191919;
   }
+  ${mobile({ width: "200px" })}
 `;
 export default function Produit() {
+  const lien = useLocation();
+  const id = lien.pathname.split("/")[2];
+  const [produit, setProduit] = useState({});
+  const [quantite, setQuantite] = useState(1);
+  const [color, setColor] = useState("");
+  const [size, setSize] = useState("");
+  const [image, setImage] = useState("");
+
+  useEffect(() => {
+    const getProduit = async () => {
+      try {
+        const res = await axios.get(`http://localhost:8080/api/products/find/`+ id);
+        setProduit(res.data);
+      } catch {}
+    };
+    getProduit();
+  }, [id]);
+
+  const MODQuantite = (type) => {
+    if (type === "remove") { quantite > 1 && setQuantite(quantite - 1);} 
+    else {setQuantite(quantite + 1); }
+  }; 
+  const P = useDispatch();
+  const F = useDispatch();
+  const MODClick = () => {
+    P(
+    ajouterproduitPanier({ produit, quantite})
+    );
+  };
+  const MODF = () => {
+    F(
+      ajouterproduitFavori({ produit, quantite})     
+    );
+  };
   return (
     <Container>
       <Navbar/>
       <Announcement/>
       <Wrapper>
         <ImgContainer>
-          <Image src="3.jfif" />
+          <Image src={produit.img} />
         </ImgContainer>
         <InfoContainer>
-            <Title> Doudoune ADIDAS</Title>
-            <Desc>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec
-            venenatis, dolor in finibus malesuada, lectus ipsum porta nunc, at
-            iaculis arcu nisi sed mauris. Nulla fermentum vestibulum ex, eget
-            tristique tortor pretium ut. Curabitur elit justo, consequat id
-            condimentum ac, volutpat ornare.
-            </Desc>
-            <Price>99,99 €</Price>
+            <Title> {produit.title}</Title>
+            <Desc>  {produit.desc} </Desc>
+            <Price>{produit.price},00 €</Price>
             <FilterContainer>
              <Filter>
               <FilterTitle>Color :</FilterTitle>
-              <FilterColor color="black" />
-              <FilterColor color="pink" />
-              <FilterColor color="gray" />
+              {produit.color?.map((c) => (
+                <FilterColor color={c} key={c} onClick={() => setColor(c)} />
+              ))}
              </Filter>
              <Filter>
-              <FilterTitle>Size</FilterTitle>
-              <FilterSize>
-                <FilterSizeOption>XS</FilterSizeOption>
-                <FilterSizeOption>S</FilterSizeOption>
-                <FilterSizeOption>M</FilterSizeOption>
-                <FilterSizeOption>L</FilterSizeOption>
-                <FilterSizeOption>XL</FilterSizeOption>
+              <FilterTitle>Size :</FilterTitle>
+              <FilterSize onChange={(e) => setSize(e.target.value)}>
+                {produit.size?.map((s) => (
+                  <FilterSizeOption key={s}>{s}</FilterSizeOption>
+                ))}
               </FilterSize>
              </Filter>
             </FilterContainer>
             <AddContainer>
              <AmountContainer>
-              <Remove style={{cursor: "pointer"}}/>
-              <Amount>1</Amount>
-              <Add style={{cursor: "pointer"}}/>
+              <Remove style={{cursor: "pointer"}} onClick={() => MODQuantite("remove")}/>
+              <Amount>{quantite}</Amount>
+              <Add style={{cursor: "pointer"}} onClick={() => MODQuantite("add")} />
              </AmountContainer>
-             <Button>ADD TO CART</Button>
+             <Filter>
+             <Button onClick={MODClick}>AJOUTER AU PANIER</Button>
+             <Favorite style={{marginLeft: "10px", fontSize:"35px", cursor:"pointer"}}  onClick={MODF}/>
+             </Filter>
             </AddContainer>
         </InfoContainer>
       </Wrapper>

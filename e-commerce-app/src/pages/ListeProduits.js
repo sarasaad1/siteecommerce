@@ -43,7 +43,7 @@ export default function ListeProduits() {
   const categorie = Lieu.pathname.split("/")[2];
   const [sort, setSort] = useState("les plus récents");
   const [filtre, setFiltres] = useState({});
- console.log(filtre);
+ console.log(filtre, categorie);
   return (
     <Container>
         <Navbar/>
@@ -53,12 +53,15 @@ export default function ListeProduits() {
             <Filtre>
                <Select name="color" onChange={(e) => setFiltres({...filtre,[e.target.name]: e.target.value})}> 
                   <Option disabled selected> Color </Option>
-                  <Option>Blanc</Option>
-                  <Option>Noir</Option>
-                  <Option>Rouge</Option>
-                  <Option>Bleu</Option>
-                  <Option>Jaune</Option>
-                  <Option>Vert</Option>
+                  <Option value="white">Blanc</Option>
+                  <Option value="black">Noir</Option>                  
+                  <Option value="yellow">Jaune</Option>
+                  <Option value="green">green</Option>
+                  <Option value="purple">Violet</Option>
+                  <Option value="red">Rouge</Option>
+                  <Option value="blue">Bleu</Option>
+                  <Option value="pink">Rose</Option>
+                  <Option value="skyblue">Bleu Ciel</Option>
                 </Select>
                <Select name="size" onChange={(e) => setFiltres({...filtre,[e.target.name]: e.target.value})}> 
                   <Option disabled selected> Size</Option>
@@ -73,12 +76,12 @@ export default function ListeProduits() {
             
                <Select onChange={(e) => setSort(e.target.value)}> 
                   <Option value="plusrecent">les plus récents</Option>
-                  <Option value="Pbe">Pris bas à élevé</Option>
-                  <Option value="Pe">Pris élevé à bas</Option>
+                  <Option value="Pris bas à élevé">Pris bas à élevé</Option>
+                  <Option value="Pris élevé à bas">Pris élevé à bas</Option>
                </Select>
             </Filtre>
         </FiltreContainer>
-        <Products cat={categorie} filtre={filtre} sort={sort}/>
+        <Products categorie={categorie} filtre={filtre} sort={sort}/>
         <Nouveautes/>
         <Footer/>
     </Container>

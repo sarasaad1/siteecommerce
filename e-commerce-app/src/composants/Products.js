@@ -20,13 +20,11 @@ export default function Products({ categorie, filtre, sort }) {
     useEffect(() => {
       const getProduits = async () => {
         try {
-          const res = await axios.get( categorie ? 
-            `http://localhost:8080/api/products?category=${categorie}`:`http://localhost:8080/api/products`);
+          const res = await axios.get(
+             categorie ? `http://localhost:8080/api/products?category=${categorie}`:`http://localhost:8080/api/products`);
           setProduits(res.data);
         } catch (err) {console.log("erreur")}
-      };
-      getProduits();
-    }, [categorie]);
+      }; getProduits()}, [categorie]);
 
     useEffect(() => {
       categorie &&  setproduitsFiltrer(
@@ -35,22 +33,14 @@ export default function Products({ categorie, filtre, sort }) {
               item[key].includes(value)
             )
           )
-        );
-    }, [produits, categorie, filtre]);
+        ); }, [produits, categorie, filtre]);
 
     useEffect(() => {
       if (sort === "les plus récents") {
-        setproduitsFiltrer((prev) =>
-          [...prev].sort((a, b) => a.createdAt - b.createdAt)
-        );
-      } else if (sort === "Pbe") {
-        setproduitsFiltrer((prev) =>
-          [...prev].sort((a, b) => a.price - b.price)
-        );
+        setproduitsFiltrer((prev) => [...prev].sort((a, b) => a.createdAt - b.createdAt));
+      } else if (sort === "Pris bas à élevé") { setproduitsFiltrer((prev) => [...prev].sort((a, b) => a.price - b.price) );
       } else {
-        setproduitsFiltrer((prev) =>
-          [...prev].sort((a, b) => b.price - a.price)
-        );
+        setproduitsFiltrer((prev) => [...prev].sort((a, b) => b.price - a.price));
       }
     }, [sort]);
 
