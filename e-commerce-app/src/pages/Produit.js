@@ -6,14 +6,16 @@ import Navbar from '../composants/Navbar'
 import Nouveautes from '../composants/Nouveautes'
 import { Add, Remove } from "@material-ui/icons"
 import { useEffect, useState } from "react"
-import { useLocation } from "react-router-dom"
+import { Link, Redirect, useLocation } from "react-router-dom"
 import { ajouterproduitPanier } from "../redux/panierRedux"
-import { ajouterproduitFavori } from "../redux/FavoriteRedux"
+import { ajouterproduitFavori,supprimerproduitFavori } from "../redux/FavoriteRedux"
 import axios from 'axios'
-import { useDispatch } from "react-redux"
+import { useDispatch,useSelector } from "react-redux"
 import mobile from '../responsive';
 import { FavoriteBorderOutlined } from '@material-ui/icons'
 import { Favorite} from '@material-ui/icons'
+import { useHistory } from 'react-router-dom'
+
 const Container = styled.div`
 `
 const Wrapper = styled.div`
@@ -160,16 +162,36 @@ export default function Produit() {
   }; 
   const P = useDispatch();
   const F = useDispatch();
+  const S = useDispatch();
   const MODClick = () => {
     P(
-    ajouterproduitPanier({ produit, quantite})
+     (color!="" & size !="") ?
+    ajouterproduitPanier({ ...produit, quantite, price:produit.price*quantite, quantite, color , size})
+    : alert("Veuillez entrez votre taille et la couleur !! ")
     );
   };
-  const MODF = () => {
+  const wishlist = useSelector((state) => state.wishlist);
+  let click=true;
+  let url = "/login";
+  let history = useHistory();
+  const utilisateur = useSelector((state) => state.utilisateur.utilisateursCourant);
+  const R =() =>{
+  if(utilisateur!=null){
+   if (!wishlist.istrue){                                                
     F(
-      ajouterproduitFavori({ produit, quantite})     
-    );
+      ajouterproduitFavori({ produit}),
+     );       
+  click=false;
+  } else {
+          S(
+          supprimerproduitFavori({ produit})  
+            ); 
+          click=true;
+       }
+  } else {    
+    history.push(url);
   };
+}
   return (
     <Container>
       <Navbar/>
@@ -184,13 +206,13 @@ export default function Produit() {
             <Price>{produit.price},00 €</Price>
             <FilterContainer>
              <Filter>
-              <FilterTitle>Color :</FilterTitle>
+              <FilterTitle>Couleur :</FilterTitle>
               {produit.color?.map((c) => (
                 <FilterColor color={c} key={c} onClick={() => setColor(c)} />
               ))}
              </Filter>
              <Filter>
-              <FilterTitle>Size :</FilterTitle>
+              <FilterTitle>Taille :</FilterTitle>
               <FilterSize onChange={(e) => setSize(e.target.value)}>
                 {produit.size?.map((s) => (
                   <FilterSizeOption key={s}>{s}</FilterSizeOption>
@@ -205,8 +227,8 @@ export default function Produit() {
               <Add style={{cursor: "pointer"}} onClick={() => MODQuantite("add")} />
              </AmountContainer>
              <Filter>
-             <Button onClick={MODClick}>AJOUTER AU PANIER</Button>
-             <Favorite style={{marginLeft: "10px", fontSize:"35px", cursor:"pointer"}}  onClick={MODF}/>
+             <Button onClick={MODClick}>AJOUTER AU PANIER</Button>             
+             <Favorite style={{marginLeft: "10px", fontSize:"35px", cursor:"pointer"}}  onClick={R}/>    
              </Filter>
             </AddContainer>
         </InfoContainer>

@@ -1,10 +1,17 @@
 import React from 'react'
-import styled from 'styled-components'
+import styled, { createGlobalStyle } from 'styled-components'
 import Announcement from '../composants/Announcement'
+import { useSelector, useDispatch  } from "react-redux";
 import Footer from '../composants/Footer'
 import Navbar from '../composants/Navbar'
 import { Add, FavoriteRounded, Remove, ShoppingCartRounded } from '@material-ui/icons'
+import { useEffect, useState } from "react";
+import StripeCheckout from "react-stripe-checkout";
+import { Link } from "react-router-dom";
+import { viderPanier } from "../redux/FontionAPI"
 import mobile from '../responsive';
+
+const CONST_KEY = process.env.KEY_PUBLIC;
 
 const Container = styled.div`
 
@@ -43,6 +50,7 @@ const TopText = styled.span`
   text-decoration: underline;
   cursor: pointer;
   margin: 0px 10px;
+  font-weight: 700;
 `
 const Bottom = styled.div`
   display: flex;
@@ -55,7 +63,8 @@ const Info = styled.div`
 `
 const Product = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between;  
+  border: 3px solid white; 
   ${mobile({ flexDirection: "column" })}
 `;
 
@@ -95,7 +104,6 @@ const PriceDetail = styled.div`
   align-items: center;
   justify-content: center;  
   margin-left: 110 px;
-  
 `;
 
 const ProductAmountContainer = styled.div`
@@ -116,7 +124,7 @@ const ProductPrice = styled.div`
   margin-left: 222px;
 `
 
-const Hr = styled.hr`
+const Espace = styled.hr`
   background-color: white;
   border: none;
   height: 3px;
@@ -161,95 +169,98 @@ const Button = styled.button`
 
 
 export default function Panier() {
+  const panier = useSelector((state) => state.panier);
+  const [stripeToken, setStripeToken] = useState(null);
+ /*
+  const setQuantite = (quantite) => {
+  quantite=quantite - 1;  } 
+
+  const MODQuantite = (type, quantite) => {
+    if (type === "remove") {quantite > 1; quantite = quantite - 1;} 
+    else {quantite += 1; }
+
+  };
+  onClick={() => {produit.quantite=produit.quantite+1}}
+  */
+  const Token = (token) => {
+    setStripeToken(token);
+  };
+const d = useDispatch();
+  const Click = (e) => {
+    e.preventDefault();
+    viderPanier(d);
+  }; 
+
   return (
     <Container>
       <Navbar/>
       <Announcement/>
       <Wrapper>
-         <Title> Ur BAG </Title>
          <Top>
-             <TopButton> Continue Shopping</TopButton>
-             <TopTexts>
-                <ShoppingCartRounded />           
-                <TopText>Shopping Bag(4)</TopText>
-                <FavoriteRounded style={{marginLeft: "20px"}}/>
-                <TopText>Your Wishlist (2)</TopText>
-             </TopTexts>
-             <TopButton type="check"> Check out</TopButton>
+             <Link to={`/produits`}>
+             <TopButton> Continuer vos achats </TopButton>
+             </Link>
+             <TopButton type="check" onClick={Click}> Vider Votre Panier</TopButton>
          </Top>
          <Bottom>
-         <Info>
-            <Product>
+         <Info>               
+         { panier.produits.map((produit) => (      
+           <Product>
               <ProductDetail>
-                <Image src="2.jfif" />
+                <Image src={produit.img} />
                 <Details>
                   <ProductName>
-                    <b>Product:</b> Capuche JORDAN
+                    <b>Product:</b> {produit.title}
                   </ProductName>
                   <ProductId>
-                    <b>ID:</b> 93813718293
+                    <b>ID:</b> {produit._id}
                   </ProductId>
-                  <ProductColor color="black" />
+                  <ProductColor color={produit.color} />
                   <ProductSize>
-                    <b>Size:</b> S
+                    <b>Size:</b> {produit.size}
                   </ProductSize>
                 </Details>
               </ProductDetail>
               <PriceDetail>
                 <ProductAmountContainer>
                 <Remove style={{cursor: "pointer"}} />
-                  <ProductAmount>2</ProductAmount>
-                <Add style={{cursor: "pointer"}}/>
+                <ProductAmount>{produit.quantite}</ProductAmount>
+                <Add style={{cursor: "pointer"}}  />
                 </ProductAmountContainer>
-                <ProductPrice>$ 30</ProductPrice>
-              </PriceDetail>
-            </Product>
-            <Hr />
-            <Product>
-              <ProductDetail>
-                <Image src="1.jfif" />
-                <Details>
-                  <ProductName>
-                    <b>Product:</b> Pantalon JORDAN
-                  </ProductName>
-                  <ProductId>
-                    <b>ID:</b> 93813718293
-                  </ProductId>
-                  <ProductColor color="red" />
-                  <ProductSize>
-                    <b>Size:</b> M
-                  </ProductSize>
-                </Details>
-              </ProductDetail>
-              <PriceDetail>
-                <ProductAmountContainer>
-                <Remove style={{cursor: "pointer"}}/>
-                  <ProductAmount>1</ProductAmount>
-                  <Add style={{cursor: "pointer"}}/>
-                </ProductAmountContainer>
-                <ProductPrice>$ 20</ProductPrice>
-              </PriceDetail>
-            </Product>
+                <ProductPrice>{produit.price*produit.quantite}.00 €</ProductPrice>
+              </PriceDetail>              
+            </Product> ))}
           </Info>
+                    
           <Summary>
-            <SummaryTitle>ORDER SUMMARY</SummaryTitle>
+            <SummaryTitle>RÉCAPITULATIF DE LA COMMANDE</SummaryTitle>
             <SummaryItem>
-              <SummaryItemText>Subtotal</SummaryItemText>
-              <SummaryItemPrice>$ 80</SummaryItemPrice>
+              <SummaryItemText>Total sans livraison</SummaryItemText>
+              <SummaryItemPrice>{panier.total}.00 €</SummaryItemPrice>
             </SummaryItem>
             <SummaryItem>
-              <SummaryItemText>Estimated Shipping</SummaryItemText>
-              <SummaryItemPrice>$ 5.90</SummaryItemPrice>
+              <SummaryItemText>Frais de livraison</SummaryItemText>
+              <SummaryItemPrice>{panier.total>100 || panier.total==0  ? 0 : 15}.00 €</SummaryItemPrice>
             </SummaryItem>
             <SummaryItem>
-              <SummaryItemText>Shipping Discount</SummaryItemText>
-              <SummaryItemPrice>$ -5.90</SummaryItemPrice>
+              <SummaryItemText></SummaryItemText>
+              <SummaryItemPrice></SummaryItemPrice>
             </SummaryItem>
             <SummaryItem type="total">
               <SummaryItemText>Total</SummaryItemText>
-              <SummaryItemPrice>$ 80</SummaryItemPrice>
+              <SummaryItemPrice>{panier.total>100 || panier.total==0  ? panier.total : panier.total+15}.00 €</SummaryItemPrice>
             </SummaryItem>
-            <Button>CHECKOUT NOW</Button>
+            <StripeCheckout
+              name="sara saad"          
+              billingAddress
+              shippingAddress
+              description={`Vous devez payer ${panier.total}.00 €`}
+              amount={panier.total * 100}
+              token={Token}
+              stripeKey={CONST_KEY}
+            >
+              <Button>Payer maintenant</Button>
+            </StripeCheckout>
           </Summary>
          </Bottom>
       </Wrapper>

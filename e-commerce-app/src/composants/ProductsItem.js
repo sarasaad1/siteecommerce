@@ -76,7 +76,9 @@ export default function ProductsItem({items}) {
           </Link>
            </Icon>
            <Icon>
-               <ShoppingCartOutlined/>
+           <Link to={`/produit/${items._id}`}>
+               <ShoppingCartOutlined style={{color: "black"}} />
+            </Link>
            </Icon>
        </Info>
     </Container>

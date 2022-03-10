@@ -5,18 +5,28 @@ const wishlist = createSlice({
   initialState: {
     produits: [],
     quantite: 0,
+    istrue:false
   },
   reducers: {
     ajouterproduitFavori : (state, action) => {
       state.quantite += 1;
-      state.produits.push(action.payload);
+      state.istrue = true;
+      state.produits.push(action.payload);      
     },
     supprimerproduitFavori : (state, action) => {
-      state.quantite -= 1;
-      state.produits.push(action.payload);
+     if (state.quantite>0) {state.quantite -= 1;
+      state.produits=[];
+      state.istrue = false;
+      state.produits.push(action.payload);}
     },
+    suppFavori : (state) => {
+      state.produits=[];
+      state.istrue = false;
+      state.quantite = 0;
+    }
   },
 });
 
 export const { ajouterproduitFavori  } = wishlist.actions;
+export const { supprimerproduitFavori,suppFavori  } = wishlist.actions;
 export default wishlist.reducer;
