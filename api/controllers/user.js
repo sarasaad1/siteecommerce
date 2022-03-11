@@ -1,5 +1,5 @@
 const User = require("../models/User");
-
+const CryptoJS = require("crypto-js");
 
 exports.updateUser = (req, res) => {
     if (req.body.password) {
